@@ -17,7 +17,6 @@ const io = socketIo(server, {
 });
 
 // Middleware
-app.set('trust proxy', 1); // trust first proxy
 app.use(helmet());
 app.use(cors({
   origin: 'http://localhost:3000',

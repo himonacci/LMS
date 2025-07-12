@@ -1,85 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { FaUsers, FaBook, FaChartLine, FaDollarSign, FaUserGraduate, FaBullhorn } from 'react-icons/fa';
-import { EnrollmentChart, RevenueChart } from '../../components/admin/DashboardCharts';
-import { usersAPI, coursesAPI, enrollmentsAPI } from '../../services/api';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [chartData, setChartData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch dashboard data
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const [users, courses, enrollments] = await Promise.all([
-          usersAPI.getAll(),
-          coursesAPI.getAll(),
-          enrollmentsAPI.getAll()
-        ]);
-
-        // Calculate stats
-        const activeInstructors = users.users.filter(user => user.role === 'instructor' && user.isActive).length;
-        const pendingEnrollments = enrollments.enrollments?.filter(enrollment => enrollment.status === 'pending').length || 0;
-        const totalRevenue = enrollments.enrollments?.reduce((sum, enrollment) => sum + (enrollment.payment?.amount || 0), 0) || 0;
-
-        setStats({
-          totalUsers: users.users.length,
-          totalCourses: courses.courses?.length || 0,
-          totalEnrollments: enrollments.enrollments?.length || 0,
-          totalRevenue,
-          pendingEnrollments,
-          activeInstructors
-        });
-
-        // Prepare chart data
-        const last6Months = Array.from({ length: 6 }, (_, i) => {
-          const date = new Date();
-          date.setMonth(date.getMonth() - i);
-          return date.toLocaleString('default', { month: 'short' });
-        }).reverse();
-
-        const enrollmentsByMonth = last6Months.map(month => {
-          const filteredEnrollments = enrollments.enrollments?.filter(e => {
-            const enrollmentMonth = new Date(e.createdAt).toLocaleString('default', { month: 'short' });
-            return enrollmentMonth === month;
-          }) || [];
-          return filteredEnrollments.length;
-        });
-
-        const revenueByMonth = last6Months.map(month => {
-          const filteredEnrollments = enrollments.enrollments?.filter(e => {
-            const enrollmentMonth = new Date(e.createdAt).toLocaleString('default', { month: 'short' });
-            return enrollmentMonth === month;
-          }) || [];
-          return filteredEnrollments.reduce((sum, e) => sum + (e.payment?.amount || 0), 0);
-        });
-
-        setChartData({
-          enrollments: {
-            labels: last6Months,
-            values: enrollmentsByMonth
-          },
-          revenue: {
-            labels: last6Months,
-            values: revenueByMonth
-          }
-        });
-
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
-
-  if (loading) return <LoadingSpinner />;
-  if (error) return <div className="text-red-500">Error: {error}</div>;
+  // Mock data - in real app, this would come from API
+  const stats = {
+    totalUsers: 1234,
+    totalCourses: 89,
+    totalEnrollments: 3456,
+    totalRevenue: 45678,
+    pendingEnrollments: 23,
+    activeInstructors: 15
+  };
 
   const recentActivities = [
     {
@@ -259,15 +190,18 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Charts */}
+      {/* Charts Placeholder */}
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="card">
           <div className="card-body">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Enrollment Trends
             </h2>
-            <div className="h-64">
-              {chartData && <EnrollmentChart data={chartData.enrollments} />}
+            <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <FaChartLine className="text-4xl text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600">Chart would go here</p>
+              </div>
             </div>
           </div>
         </div>
@@ -277,8 +211,11 @@ const AdminDashboard = () => {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Revenue Overview
             </h2>
-            <div className="h-64">
-              {chartData && <RevenueChart data={chartData.revenue} />}
+            <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <FaDollarSign className="text-4xl text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600">Revenue chart would go here</p>
+              </div>
             </div>
           </div>
         </div>
